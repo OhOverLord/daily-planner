@@ -1,11 +1,24 @@
 {% extends "base_generic.html" %}
 {% block title %}
-<title>База студентов</title>
+<title>Daily planner</title>
 {% endblock %}
 
 {% block content %}
-<p>{{user}}</p>
-    <h1 class="text-center mt-5">{{title}}</h1>
+<!--<form action="{% url 'add_record' %}" method="POST" class="container mt-5">-->
+<!--        {% csrf_token %}-->
+<!--        {% for field in record_form %}-->
+<!--            <div class="form-group row">-->
+<!--                <div class="col-sm-10">-->
+<!--                        {{ field.label }}-->
+<!--                        {{ field }}-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        {% endfor %}-->
+<!--        <input type="submit" value="Добавить" class="btn btn-primary mt-2">-->
+<!--    </form>-->
+<!--    <hr>-->
+
+    <h1 class="text-center mt-5">{{user}}{{title}}</h1>
     <div class="d-flex justify-content-center mt-5">
 
         <div class="card" style="width: 25rem;">

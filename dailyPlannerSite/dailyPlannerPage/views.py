@@ -3,6 +3,8 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
+from django.core import serializers
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 
 # Create your views here.
@@ -15,13 +17,15 @@ from .forms import *
 @method_decorator(login_required, name='dispatch')
 class Index(TemplateView):
     template_name = 'index.html'
+    current_account = None
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        current_account = User.objects.get(username=self.request.user)
+        self.current_account = User.objects.get(username=self.request.user)
         context = {
-            'title': 'Overlord - daily planner',
-            'user': current_account,
+            'title': ' - daily planner',
+            'user': self.current_account,
+            'record_form': RecordForm()
         }
         return context
 
@@ -57,4 +61,22 @@ class LogoutView(View):
         logout(request)
         one_hour_to_sec = 60 * 60
         self.request.session.set_expiry(one_hour_to_sec)
+        return redirect('/')
+
+
+class AddRecord(View):
+    def get(self, request):
+        current_user = User.objects.get(username=request.user)
+        return HttpResponse(serializers.serialize('json', current_user.record_set.all())
+                            , content_type='application/json')
+
+    def post(self, request):
+        record_form = RecordForm(request.POST)
+        current_user = request.user
+        if record_form.is_valid():
+            record = Record()
+            record.user = current_user
+            record.title = record_form.cleaned_data['title']
+            record.completion_date = record_form.cleaned_data['completion_date']
+            record.save()
         return redirect('/')
