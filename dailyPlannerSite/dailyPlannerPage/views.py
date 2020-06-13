@@ -66,8 +66,10 @@ class LogoutView(View):
 
 class AddRecord(View):
     def get(self, request):
+        data = request.GET.get("data", "")
         current_user = User.objects.get(username=request.user)
-        return HttpResponse(serializers.serialize('json', current_user.record_set.all())
+        return HttpResponse(serializers.serialize('json', current_user.record_set.filter(completion_date=data)
+                                                  , fields=('title', 'completion_date'))
                             , content_type='application/json')
 
     def post(self, request):

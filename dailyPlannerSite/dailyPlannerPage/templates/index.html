@@ -4,19 +4,19 @@
 {% endblock %}
 
 {% block content %}
-<!--<form action="{% url 'add_record' %}" method="POST" class="container mt-5">-->
-<!--        {% csrf_token %}-->
-<!--        {% for field in record_form %}-->
-<!--            <div class="form-group row">-->
-<!--                <div class="col-sm-10">-->
-<!--                        {{ field.label }}-->
-<!--                        {{ field }}-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        {% endfor %}-->
-<!--        <input type="submit" value="Добавить" class="btn btn-primary mt-2">-->
-<!--    </form>-->
-<!--    <hr>-->
+<form action="{% url 'add_record' %}" method="POST" class="container mt-5">
+        {% csrf_token %}
+        {% for field in record_form %}
+            <div class="form-group row">
+                <div class="col-sm-10">
+                        {{ field.label }}
+                        {{ field }}
+                </div>
+            </div>
+        {% endfor %}
+        <input type="submit" value="Добавить" class="btn btn-primary mt-2">
+    </form>
+    <hr>
 
     <h1 class="text-center mt-5">{{user}}{{title}}</h1>
     <div class="d-flex justify-content-center mt-5">
@@ -146,7 +146,6 @@
         selectYear = document.getElementById("year");
         selectMonth = document.getElementById("month");
         thisDay = document.getElementById("day-plan");
-
         months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
         monthAndYear = document.getElementById("monthAndYear");
@@ -209,6 +208,22 @@
                         if (date === today.getDate() && year === today.getFullYear() && month === today.getMonth()) {
                             cell.classList.add("bg-info");
                             thisDay.innerHTML = date;
+                            let xhr = new XMLHttpRequest();
+                            let data;
+                            if(String(currentMonth + 1).length == 1)
+                                data = currentYear + '-0' + (currentMonth + 1) + '-' + date;
+                            else
+                                data = currentYear + '-' + (currentMonth + 1) + '-' + date;
+                            xhr.open('GET','http://127.0.0.1:7000/daily_planner/add_record/?data=' + data, true);
+                            xhr.send();
+                            xhr.addEventListener('readystatechange', function(){
+                                if(xhr.readyState == 4 && xhr.status == 200){
+                                    let massage = JSON.parse(xhr.responseText);
+                                    console.log(massage);
+                                    for (var i = 0; i < massage.length; i++)
+                                        thisDay.innerHTML += `\n` + massage[i].fields.title;
+                                }
+                            })
                         } // color today's date
                         cell.appendChild(cellText);
                         row.appendChild(cell);
@@ -228,6 +243,23 @@
             if (target.tagName == 'TD' && target.innerHTML != "") {
                 target.classList.add("bg-danger");
                 thisDay.innerHTML = target.innerHTML;
+
+                let xhr = new XMLHttpRequest();
+                let data;
+                if(String(currentMonth + 1).length == 1)
+                    data = currentYear + '-0' + (currentMonth + 1) + '-' + target.innerHTML;
+                else
+                    data = currentYear + '-' + (currentMonth + 1) + '-' + target.innerHTML;
+                xhr.open('GET','http://127.0.0.1:7000/daily_planner/add_record/?data=' + data, true);
+                xhr.send();
+                xhr.addEventListener('readystatechange', function(){
+                    if(xhr.readyState == 4 && xhr.status == 200){
+                        let massage = JSON.parse(xhr.responseText);
+                        console.log(massage);
+                        for (var i = 0; i < massage.length; i++)
+                            thisDay.innerHTML += `\n` + massage[i].fields.title;
+                    }
+                })
             return;
             }
             target = target.parentNode;
