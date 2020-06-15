@@ -6,17 +6,16 @@
 {% block content %}
 <form class="form-signin container w-25 mt-5" action="{% url 'login' %}" method="post">
     {% csrf_token %}
-  <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
-  <label for="id_username">Username:</label>
+  <h1 class="h3 mb-3 font-weight-normal">Войти: </h1>
+  <label for="id_username">Логин:</label>
     {{ loginform.visible_fields.0 }}
-  <label for="id_password">Password:</label>
+  <label for="id_password">Пароль:</label>
     {{ loginform.visible_fields.1 }}
   <div class="checkbox mb-3">
     <label>
-      <input type="checkbox" value="remember-me" name="remember_me"> Remember me
+      <input type="checkbox" value="remember-me" name="remember_me"> Запомнить меня
     </label>
   </div>
   <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
-    {{ form.errors }}
 </form>
 {% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<form class="form-signin container w-25 mt-5" action="{% url 'registration' %}" method="post">
+    {% csrf_token %}
+    <h1 class="h3 mb-3 font-weight-normal">Войти: </h1>
+    <label for="id_username">Логин:</label>
+    <input type="text" class="form-control" name="username" maxlength="150"
+    autofocus required id="id_username">
+    <label for="id_email">Email:</label>
+    <input type="email" class="form-control" name="email" maxlength="254"
+                       id="id_email">
+    <label for="id_password1">Пароль:</label>
+    <input type="password" class="form-control" name="password1" required
+           id="id_password1">
+    <label for="id_password2">Повторите пароль:</label>
+    <input type="password" class="form-control" name="password2" required
+           id="id_password2">
+    {% if form.errors %}
+    <div class="form-control mt-3">
+        {{ form.errors }}
+    </div>
+    {% endif %}
+    <button class="btn btn-lg btn-primary btn-block mt-3" type="submit">Войти</button>
+</form>
+{% endblock %}

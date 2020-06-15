@@ -4,20 +4,6 @@
 {% endblock %}
 
 {% block content %}
-<form action="{% url 'add_record' %}" method="POST" class="container mt-5">
-        {% csrf_token %}
-        {% for field in record_form %}
-            <div class="form-group row">
-                <div class="col-sm-10">
-                        {{ field.label }}
-                        {{ field }}
-                </div>
-            </div>
-        {% endfor %}
-        <input type="submit" value="Добавить" class="btn btn-primary mt-2">
-    </form>
-    <hr>
-
     <h1 class="text-center mt-5">{{user}}{{title}}</h1>
     <div class="d-flex justify-content-center mt-5">
 
@@ -121,6 +107,19 @@
             </div>
         </div>
     </div>
+<hr>
+    <form action="{% url 'add_record' %}" method="POST" class="container mt-5 w-50">
+            {% csrf_token %}
+            {% for field in record_form %}
+                <div class="form-group row">
+                    <div class="col-sm-10">
+                            {{ field.label }}
+                            {{ field }}
+                    </div>
+                </div>
+            {% endfor %}
+            <input type="submit" value="Добавить" class="btn btn-primary mt-2">
+    </form>
 {% endblock %}
 
 {% block script %}
@@ -140,13 +139,17 @@
             crossorigin="anonymous"></script>
 
     <script>
+        let xhr = new XMLHttpRequest();
+        xhr.open('GET','http://127.0.0.1:7000/daily_planner/record_status/', true);
+        xhr.send();
+
         today = new Date();
         currentMonth = today.getMonth();
         currentYear = today.getFullYear();
         selectYear = document.getElementById("year");
         selectMonth = document.getElementById("month");
         thisDay = document.getElementById("day-plan");
-        months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        months = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
 
         monthAndYear = document.getElementById("monthAndYear");
         showCalendar(currentMonth, currentYear);
@@ -204,16 +207,33 @@
 
                     else {
                         cell = document.createElement("td");
-                        cellText = document.createTextNode(date);
+                        cellText = document.createElement("span");
+                        cellText.innerHTML = date;
+                        let sch = document.createElement("span");
+                        let data;
+                        if(String(currentMonth + 1).length == 1)
+                            data = currentYear + '-0' + (currentMonth + 1) + '-' + date;
+                        else
+                            data = currentYear + '-' + (currentMonth + 1) + '-' + date;
+                        let xhr1 = new XMLHttpRequest();
+                        xhr1.open('GET','http://127.0.0.1:7000/daily_planner/add_record/?data=' + data, true);
+                        xhr1.send();
+                        xhr1.addEventListener('readystatechange', function(){
+                            if(xhr1.readyState == 4 && xhr1.status == 200){
+                                let massage = JSON.parse(xhr1.responseText);
+                                if(massage.length != 0)
+                                {
+                                    sch.innerHTML = '(' + massage.length + ')';
+                                    for (let i = 0; i < massage.length; i++)
+                                        if(massage[i].fields.status == 'Не выполнено' && date != today.getDate())
+                                            sch.parentElement.classList.add("bg-warning");
+                                }
+                            }
+                        })
                         if (date === today.getDate() && year === today.getFullYear() && month === today.getMonth()) {
-                            cell.classList.add("bg-info");
+                            cell.classList.add("bg-danger");
                             thisDay.innerHTML = date;
                             let xhr = new XMLHttpRequest();
-                            let data;
-                            if(String(currentMonth + 1).length == 1)
-                                data = currentYear + '-0' + (currentMonth + 1) + '-' + date;
-                            else
-                                data = currentYear + '-' + (currentMonth + 1) + '-' + date;
                             xhr.open('GET','http://127.0.0.1:7000/daily_planner/add_record/?data=' + data, true);
                             xhr.send();
                             xhr.addEventListener('readystatechange', function(){
@@ -224,8 +244,9 @@
                                         thisDay.innerHTML += `\n` + massage[i].fields.title;
                                 }
                             })
-                        } // color today's date
+                        }
                         cell.appendChild(cellText);
+                        cell.appendChild(sch);
                         row.appendChild(cell);
                         date++;
                     }
@@ -241,15 +262,16 @@
 
         while (target != this) {
             if (target.tagName == 'TD' && target.innerHTML != "") {
-                target.classList.add("bg-danger");
-                thisDay.innerHTML = target.innerHTML;
+                $('table td').removeClass('bg-info');
+                $(target).addClass('bg-info');
+                thisDay.innerHTML = target.firstChild.innerHTML;
 
                 let xhr = new XMLHttpRequest();
                 let data;
                 if(String(currentMonth + 1).length == 1)
-                    data = currentYear + '-0' + (currentMonth + 1) + '-' + target.innerHTML;
+                    data = currentYear + '-0' + (currentMonth + 1) + '-' + target.firstChild.innerHTML;
                 else
-                    data = currentYear + '-' + (currentMonth + 1) + '-' + target.innerHTML;
+                    data = currentYear + '-' + (currentMonth + 1) + '-' + target.firstChild.innerHTML;
                 xhr.open('GET','http://127.0.0.1:7000/daily_planner/add_record/?data=' + data, true);
                 xhr.send();
                 xhr.addEventListener('readystatechange', function(){

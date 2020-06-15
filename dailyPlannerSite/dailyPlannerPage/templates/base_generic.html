@@ -8,8 +8,24 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css"
           integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+    <style>
+        .table td:hover{
+          background: #a1a19f;
+          color: #fff;
+        }
+    </style>
 </head>
 <body>
+<nav class="navbar navbar-expand-lg sticky-top navbar-light bg-light d-flex">
+  <a class="navbar-brand mr-auto p-2" href="{% url 'index' %}">Главная</a>
+  <div class="form-inline p-2">
+    {% if user.is_authenticated %}
+     <a class="nav-item nav-link text-muted" href="{% url 'logout' %}?next={{request.path}}">Выйти</a>
+   {% else %}
+     <a class="nav-item nav-link text-muted" href="{% url 'registration' %}?next={{request.path}}">Зарегестрироваться</a>
+   {% endif %}
+  </div>
+</nav>
 {% block content %} {% endblock %}
 {% block script %} {% endblock %}
 </body>
