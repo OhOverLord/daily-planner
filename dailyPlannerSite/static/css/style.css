@@ -1,0 +1,47 @@
+ul {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+
+ul li:nth-child(odd) {
+    background: #f9f9f9;
+}
+
+ul li:hover {
+    background: #ddd;
+}
+
+ul li.checked {
+    background: #888;
+    color: #fff;
+    text-decoration: line-through;
+}
+
+ul li.checked::before {
+    content: '';
+    position: absolute;
+    border-color: #fff;
+    border-style: solid;
+    border-width: 0 2px 2px 0;
+    top: 10px;
+    left: 16px;
+    transform: rotate(45deg);
+    height: 15px;
+    width: 7px;
+}
+
+.close:hover {
+    background-color: #555;
+    color: white;
+}
+
+.header:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.addBtn:hover {
+    background-color: #bbb;
+}

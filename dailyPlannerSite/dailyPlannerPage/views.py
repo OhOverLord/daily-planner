@@ -91,15 +91,13 @@ class AddRecord(View):
                             , content_type='application/json')
 
     def post(self, request):
-        record_form = RecordForm(request.POST)
         current_user = request.user
-        if record_form.is_valid():
-            record = Record()
-            record.user = current_user
-            record.title = record_form.cleaned_data['title']
-            record.completion_date = record_form.cleaned_data['completion_date']
-            record.save()
-        return redirect('/')
+        record = Record()
+        record.user = current_user
+        record.title = request.POST.get("title")
+        record.completion_date = request.POST.get("completion_date")
+        record.save()
+        return redirect("/")
 
 
 class RecordStatus(View):
@@ -107,10 +105,15 @@ class RecordStatus(View):
         current_user = User.objects.get(username=request.user)
         now = datetime.datetime.now()
         for el in current_user.record_set.all():
-            if el.status != 'Выполненно':
+            if el.status != 'Выполнено':
                 date = str(el.completion_date).split('-')
                 if date[0] <= str(now.year) and date[1][1] <= str(now.month) and date[2] < str(now.day + 1):
-                    print(el.completion_date)
                     el.status = 'Не выполнено'
                     el.save()
+        return HttpResponse("True")
+
+    def post(self, request):
+        record = Record.objects.get(id=request.POST.get("id"))
+        record.status = "Выполнено"
+        record.save()
         return HttpResponse("True")
