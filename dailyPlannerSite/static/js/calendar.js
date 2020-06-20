@@ -31,7 +31,7 @@ function newElement() {
         dateRecords(currentDay);
         document.getElementById("myInput").value = "";
         cell = document.getElementById(day(currentDay));
-        if(Number(currentDay) >= new Date().getDate() && new Date().getMonth() >= Number(selectMonth.value))
+        if(Number(currentDay) <= new Date().getDate() && new Date().getMonth() >= Number(selectMonth.value))
         {
             if(cell.lastChild.innerHTML == '')
                 cell.lastChild.innerHTML = '(1)';
