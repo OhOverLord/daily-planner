@@ -14,52 +14,6 @@ var csrfcookie = function() {
     return cookieValue;
 };
 
-function day(date) {
-    if(String(currentMonth + 1).length == 1)
-        return currentYear + '-0' + (currentMonth + 1) + '-' + date;
-    return currentYear + '-' + (currentMonth + 1) + '-' + date;
-}
-
-function dateRecords(date) {
-    xhr.open('GET','http://127.0.0.1:7000/daily_planner/add_record/?data=' + day(date), true);
-    xhr.send();
-    xhr.addEventListener('readystatechange', function(){
-        if(xhr.readyState == 4 && xhr.status == 200){
-            let massage = JSON.parse(xhr.responseText);
-            let ul = document.getElementById("myUL");
-            ul.innerHTML = "";
-            for (var i = 0; i < massage.length; i++)
-            {
-                let li = document.createElement("li");
-                li.id = massage[i].pk;
-                if(massage[i].fields.status == 'Выполнено')
-                {
-                    li.classList.add('checked');
-                    console.log("lol");
-                }
-                li.innerHTML = massage[i].fields.title;
-                ul.appendChild(li);
-            }
-        }
-    })
-}
-
-//Проверка статуса задачи
-let xhr = new XMLHttpRequest();
-xhr.open('GET','http://127.0.0.1:7000/daily_planner/record_status/', true);
-xhr.send();
-
-//Задачи
-var myNodelist = document.getElementsByTagName("LI");
-var i;
-for (i = 0; i < myNodelist.length; i++) {
-var span = document.createElement("SPAN");
-var txt = document.createTextNode("\u00D7");
-span.className = "close";
-span.appendChild(txt);
-myNodelist[i].appendChild(span);
-}
-
 function newElement() {
     var li = document.createElement("li");
     li.innerHTML = document.getElementById("myInput").value;
@@ -74,24 +28,49 @@ function newElement() {
         var body = 'title=' + encodeURIComponent(document.getElementById("myInput").value) +
                    '&completion_date=' + encodeURIComponent(day(currentDay));
         request.send(body);
-        console.log(day(currentDay));
         dateRecords(currentDay);
         document.getElementById("myInput").value = "";
+        cell = document.getElementById(day(currentDay));
+        if(Number(currentDay) >= new Date().getDate() && new Date().getMonth() >= Number(selectMonth.value))
+        {
+            if(cell.lastChild.innerHTML == '')
+                cell.lastChild.innerHTML = '(1)';
+            else
+                cell.lastChild.innerHTML = '(' + String(Number(cell.lastChild.innerHTML[1]) + 1) + ')';
+            cell.classList.add("bg-warning");
+        }
+        else
+            cell.classList.add("bg-success");
     }
 }
 
-var list = document.querySelector('ul');
-    list.addEventListener('click', function(ev) {
-    if (ev.target.tagName === 'LI') {
-        ev.target.classList.add('checked');
-        var request = new XMLHttpRequest();
-        request.open('POST', 'http://127.0.0.1:7000/daily_planner/record_status/', true);
-        request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-        request.setRequestHeader('X-CSRFToken', csrfcookie());
-        var body = 'id=' + encodeURIComponent(ev.target.id);
-        request.send(body);
-    }
-}, false);
+function day(date) {
+    if(String(currentMonth + 1).length == 1)
+        return currentYear + '-0' + (currentMonth + 1) + '-' + date;
+    return currentYear + '-' + (currentMonth + 1) + '-' + date;
+}
+
+function dateRecords(date) {
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET','http://127.0.0.1:7000/daily_planner/add_record/?data=' + day(date), true);
+    xhr.send();
+    xhr.addEventListener('readystatechange', function(){
+        if(xhr.readyState == 4 && xhr.status == 200){
+            let massage = JSON.parse(xhr.responseText);
+            let ul = document.getElementById("myUL");
+            ul.innerHTML = "";
+            for (var i = 0; i < massage.length; i++)
+            {
+                let li = document.createElement("li");
+                li.id = massage[i].pk;
+                if(massage[i].fields.status == 'Выполнено')
+                    li.classList.add('checked');
+                li.innerHTML = massage[i].fields.title;
+                ul.appendChild(li);
+            }
+        }
+    })
+}
 
 //Календарь
 today = new Date();
@@ -161,24 +140,27 @@ function showCalendar(month, year) {
 
             else {
                 cell = document.createElement("td");
+                cell.id = day(date);
                 cellText = document.createElement("span");
                 cellText.innerHTML = date;
                 let sch = document.createElement("span");
-                let xhr1 = new XMLHttpRequest();
-                xhr1.open('GET','http://127.0.0.1:7000/daily_planner/add_record/?data=' + day(date), true);
-                xhr1.send();
-                xhr1.addEventListener('readystatechange', function(){
-                    if(xhr1.readyState == 4 && xhr1.status == 200){
-                        let massage = JSON.parse(xhr1.responseText);
-                        if(massage.length != 0)
+                let statusXhr = new XMLHttpRequest();
+                statusXhr.open('GET','http://127.0.0.1:7000/daily_planner/record_status/?data=' + day(date), true);
+                statusXhr.send();
+                statusXhr.addEventListener('readystatechange', function(){
+                    if(statusXhr.readyState == 4 && statusXhr.status == 200){
+                        let massage = JSON.parse(statusXhr.responseText);
+                        if(massage.count > 0)
                         {
-                            sch.innerHTML = '(' + massage.length + ')';
-                            for (let i = 0; i < massage.length; i++)
-                            {
-                                if(massage[i].fields.status == 'Не выполнено' && date != today.getDate())
-                                    sch.parentElement.classList.add("bg-warning");
-                            }
+                            sch.innerHTML = '(' + massage.count + ')';
+                            sch.parentElement.classList.add("bg-warning");
                         }
+                        if(massage.length != massage.ln_success)
+                            if(new Date().getMonth() < Number(selectMonth.value))
+                                sch.parentElement.classList.add("bg-success");
+                            else if(new Date().getMonth() <= Number(selectMonth.value))
+                                if(Number(sch.previousSibling.innerHTML) > new Date().getDate())
+                                    sch.parentElement.classList.add("bg-success");
                     }
                 })
                 if (date === today.getDate() && year === today.getFullYear() && month === today.getMonth()) {
@@ -213,6 +195,29 @@ let target = event.target;
             $(target).addClass('bg-info');
             titleDay.innerHTML = target.firstChild.innerHTML;
             dateRecords(target.firstChild.innerHTML);
+
+            var list = document.querySelector('ul');
+            list.addEventListener('click', function(ev) {
+                if (ev.target.tagName === 'LI') {
+                    ev.target.classList.add('checked');
+                    if(target.lastChild.innerHTML != "")
+                        if(Number(target.lastChild.innerHTML[1]) - 1 != 0)
+                            target.lastChild.innerHTML = '(' + String(Number(target.lastChild.innerHTML[1]) - 1) + ')';
+                        else
+                        {
+                            target.lastChild.innerHTML = '';
+                            target.classList.remove('bg-warning');
+                        }
+                    else
+                        target.classList.remove('bg-success');
+                    var request = new XMLHttpRequest();
+                    request.open('POST', 'http://127.0.0.1:7000/daily_planner/record_status/', true);
+                    request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+                    request.setRequestHeader('X-CSRFToken', csrfcookie());
+                    var body = 'id=' + encodeURIComponent(ev.target.id);
+                    request.send(body);
+                }
+            }, false);
         return;
         }
         target = target.parentNode;

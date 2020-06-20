@@ -1,4 +1,5 @@
 import datetime
+import json
 
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
@@ -104,13 +105,18 @@ class RecordStatus(View):
     def get(self, request):
         current_user = User.objects.get(username=request.user)
         now = datetime.datetime.now()
-        for el in current_user.record_set.all():
-            if el.status != 'Выполнено':
-                date = str(el.completion_date).split('-')
-                if date[0] <= str(now.year) and date[1][1] <= str(now.month) and date[2] < str(now.day + 1):
+        data = request.GET.get("data", "")
+        ln = current_user.record_set.filter(completion_date=data)
+        ln_success = current_user.record_set.filter(completion_date=data, status="Выполнено")
+        data = data.split('-')
+        sch = 0
+        if int(data[0]) <= now.year and int(data[1]) <= now.month and int(data[2]) < now.day + 1:
+            for el in ln:
+                if el.status != 'Выполнено':
                     el.status = 'Не выполнено'
                     el.save()
-        return HttpResponse("True")
+                    sch += 1
+        return HttpResponse(json.dumps({"length": len(ln), "count": sch, "ln_success": len(ln_success)}), content_type="application/json")
 
     def post(self, request):
         record = Record.objects.get(id=request.POST.get("id"))
