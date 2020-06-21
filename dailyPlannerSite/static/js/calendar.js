@@ -31,16 +31,16 @@ function newElement() {
         dateRecords(currentDay);
         document.getElementById("myInput").value = "";
         cell = document.getElementById(day(currentDay));
-        if(Number(currentDay) <= new Date().getDate() && new Date().getMonth() >= Number(selectMonth.value))
+        if(new Date().getMonth() < Number(selectMonth.value) || (new Date().getMonth() == Number(selectMonth.value) && new Date().getDate() < Number(currentDay)))
+            cell.classList.add("bg-success");
+        else
         {
             if(cell.lastChild.innerHTML == '')
-                cell.lastChild.innerHTML = '(1)';
+            cell.lastChild.innerHTML = '(1)';
             else
                 cell.lastChild.innerHTML = '(' + String(Number(cell.lastChild.innerHTML[1]) + 1) + ')';
             cell.classList.add("bg-warning");
         }
-        else
-            cell.classList.add("bg-success");
     }
 }
 
@@ -137,7 +137,6 @@ function showCalendar(month, year) {
             else if (date > daysInMonth(month, year)) {
                 break;
             }
-
             else {
                 cell = document.createElement("td");
                 cell.id = day(date);
@@ -150,17 +149,19 @@ function showCalendar(month, year) {
                 statusXhr.addEventListener('readystatechange', function(){
                     if(statusXhr.readyState == 4 && statusXhr.status == 200){
                         let massage = JSON.parse(statusXhr.responseText);
-                        if(massage.count > 0)
-                        {
-                            sch.innerHTML = '(' + massage.count + ')';
-                            sch.parentElement.classList.add("bg-warning");
-                        }
                         if(massage.length != massage.ln_success)
-                            if(new Date().getMonth() < Number(selectMonth.value))
+                            if(new Date().getMonth() > Number(selectMonth.value))
+                            {
+                                sch.innerHTML = '(' + massage.count + ')';
+                                sch.parentElement.classList.add("bg-warning");
+                            }
+                            else if(new Date().getMonth() == Number(selectMonth.value) && new Date().getDate() >= Number(sch.previousSibling.innerHTML))
+                            {
+                                sch.innerHTML = '(' + massage.count + ')';
+                                sch.parentElement.classList.add("bg-warning");
+                            }
+                            else
                                 sch.parentElement.classList.add("bg-success");
-                            else if(new Date().getMonth() <= Number(selectMonth.value))
-                                if(Number(sch.previousSibling.innerHTML) > new Date().getDate())
-                                    sch.parentElement.classList.add("bg-success");
                     }
                 })
                 if (date === today.getDate() && year === today.getFullYear() && month === today.getMonth()) {

@@ -110,12 +110,13 @@ class RecordStatus(View):
         ln_success = current_user.record_set.filter(completion_date=data, status="Выполнено")
         data = data.split('-')
         sch = 0
-        if int(data[0]) <= now.year and int(data[1]) <= now.month and int(data[2]) < now.day + 1:
-            for el in ln:
-                if el.status != 'Выполнено':
-                    el.status = 'Не выполнено'
-                    el.save()
-                    sch += 1
+        if int(data[0]) <= now.year:
+            if int(data[1]) <= now.month or int(data[2]) <= now.day + 1:
+                for el in ln:
+                    if el.status != 'Выполнено':
+                        el.status = 'Не выполнено'
+                        el.save()
+                        sch += 1
         return HttpResponse(json.dumps({"length": len(ln), "count": sch, "ln_success": len(ln_success)}), content_type="application/json")
 
     def post(self, request):
